@@ -14,7 +14,7 @@ Built with **React 18 + Vite**, **Google Gemini Free API**, **TMDB**, **RAWG**, 
 ## ✨ Features
 
 - 🛋️ **Shared vs. Solo Tracking**: Differentiate between media you enjoy **Together (Co-Op)** versus personal **Solo** guilty pleasures (e.g. *Bridgerton*, *Twilight*, *Elden Ring*).
-- 🚦 **Interest Meter & Veto**: Mark interest before watching/playing (`🔥 Hyped`, `👍 Down`, `🤷 Neutral`, `👎 Pass`). Passing automatically shifts shared items into the other partner's Solo queue!
+- 🚦 **Interest Meter & Veto**: Mark interest before watching/playing (`🔥 Hyped`, `👎 Down`, `🤷 Neutral`, `🚫 Pass`). Passing automatically shifts shared items into the other partner's Solo queue!
 - 🎬 **Multi-Media Add-ons**: Toggle support in Settings for:
   - 🍿 **Movies & TV Shows** (via TMDB)
   - 🎮 **Video Games** (Co-Op & Solo, via RAWG)
