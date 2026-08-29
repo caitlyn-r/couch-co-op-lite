@@ -8,35 +8,44 @@ export async function generateAIRecommendations(
   mode: 'compromise' | 'partner1_solo' | 'partner2_solo' = 'compromise',
   mediaCategory: 'all' | 'movies' | 'games' | 'books' = 'all'
 ): Promise<GeminiRecommendation[]> {
+  const existingTitleSet = new Set(watchlist.map((item) => item.title.trim().toLowerCase()));
+
   if (!settings.geminiApiKey) {
-    return getFallbackRecommendations(settings, mode, mediaCategory);
+    return getFallbackRecommendations(settings, mode, mediaCategory, existingTitleSet);
   }
 
   const p1 = settings.partner1Name || 'Partner 1';
   const p2 = settings.partner2Name || 'Partner 2';
 
-  // Filter and format history
-  const historySummary = watchlist
-    .map((item) => {
-      const r1 = item.partner1Rating ? `${p1}: ${item.partner1Rating}/10` : '';
-      const r2 = item.partner2Rating ? `${p2}: ${item.partner2Rating}/10` : '';
-      const ratings = [r1, r2].filter(Boolean).join(', ');
-      const creatorInfo = item.creator ? ` by ${item.creator}` : '';
-      return `- [${item.type.toUpperCase()}] "${item.title}"${creatorInfo} (${item.year}, [${item.genres.join(', ')}]) [Audience: ${item.audience}] ${ratings ? `{${ratings}}` : ''}`;
-    })
-    .join('\n');
+  const watchedItems = watchlist.filter((item) => item.status === 'watched');
+  const backlogItems = watchlist.filter((item) => item.status === 'watchlist' || item.status === 'watching');
+
+  const formatSummary = (items: WatchlistEntry[]) =>
+    items
+      .map((item) => {
+        const r1 = item.partner1Rating ? `${p1}: ${item.partner1Rating}/10` : '';
+        const r2 = item.partner2Rating ? `${p2}: ${item.partner2Rating}/10` : '';
+        const ratings = [r1, r2].filter(Boolean).join(', ');
+        const creatorInfo = item.creator ? ` by ${item.creator}` : '';
+        return `- [${item.type.toUpperCase()}] "${item.title}"${creatorInfo} (${item.year}, [${item.genres.join(', ')}]) [Audience: ${item.audience}] ${ratings ? `{${ratings}}` : ''}`;
+      })
+      .join('\n');
+
+  const watchedSummary = formatSummary(watchedItems);
+  const backlogSummary = formatSummary(backlogItems);
+  const allTitlesList = watchlist.map((item) => `"${item.title}"`).join(', ');
 
   let modeInstruction = '';
   let targetAudience: AudienceType = 'together';
 
   if (mode === 'compromise') {
-    modeInstruction = `Recommend 5 titles that find the sweet spot / middle ground for BOTH ${p1} and ${p2} to enjoy TOGETHER. Even if their solo tastes differ (e.g. one likes romance and the other likes sci-fi), find clever crossover titles that satisfy both tastes.`;
+    modeInstruction = `Recommend 5 NEW titles that find the sweet spot / middle ground for BOTH ${p1} and ${p2} to enjoy TOGETHER. Even if their solo tastes differ (e.g. one likes romance and the other likes sci-fi), find clever crossover titles that bridge both tastes.`;
     targetAudience = 'together';
   } else if (mode === 'partner1_solo') {
-    modeInstruction = `Recommend 5 titles strictly tailored to ${p1}'s personal solo taste and high ratings. Do NOT worry about ${p2}'s preferences.`;
+    modeInstruction = `Recommend 5 NEW titles strictly tailored to ${p1}'s personal solo taste and high ratings. Do NOT worry about ${p2}'s preferences.`;
     targetAudience = 'partner1';
   } else {
-    modeInstruction = `Recommend 5 titles strictly tailored to ${p2}'s personal solo taste and high ratings. Do NOT worry about ${p1}'s preferences.`;
+    modeInstruction = `Recommend 5 NEW titles strictly tailored to ${p2}'s personal solo taste and high ratings. Do NOT worry about ${p1}'s preferences.`;
     targetAudience = 'partner2';
   }
 
@@ -46,14 +55,24 @@ export async function generateAIRecommendations(
   if (mediaCategory === 'books') mediaInstruction = 'Recommend ONLY Books / Audiobooks (include the author).';
 
   const prompt = `You are an entertainment critic and media matchmaker for "${p1}" and "${p2}".
-Here is their shared viewing, gaming, and reading history and ratings:
-${historySummary}
+
+Here is their COMPLETED / WATCHED / PLAYED history (use this strictly to understand their taste and ratings):
+${watchedSummary || 'No completed items yet.'}
+
+Here is their CURRENT PENDING BACKLOG (titles they already have queued up):
+${backlogSummary || 'No backlog items yet.'}
+
+CRITICAL EXCLUSION LIST (NEVER RECOMMEND ANY OF THESE TITLES):
+${allTitlesList || 'None.'}
 
 Goal:
 ${modeInstruction}
 ${mediaInstruction}
 
-Do NOT recommend titles that are already in their history.
+CRITICAL RULES:
+1. Every recommendation MUST be a brand new, unadded title that neither partner has in their library.
+2. DO NOT recommend any title that has already been watched, played, read, or is currently on their backlog list.
+3. Every suggestion should be distinct from titles in the exclusion list.
 
 Return ONLY a valid JSON array of 5 objects matching this exact structure:
 [
@@ -91,10 +110,13 @@ Return ONLY a valid JSON array of 5 objects matching this exact structure:
 
     const cleanJson = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const parsed: GeminiRecommendation[] = JSON.parse(cleanJson);
-    return parsed.map((item) => ({ ...item, audience: targetAudience }));
+    
+    // Strict client-side filter: Ensure no recommendation matches any existing library item
+    const unadded = parsed.filter((item) => !existingTitleSet.has(item.title.trim().toLowerCase()));
+    return unadded.map((item) => ({ ...item, audience: targetAudience }));
   } catch (err) {
     console.error('Failed to generate Gemini recommendations:', err);
-    return getFallbackRecommendations(settings, mode, mediaCategory);
+    return getFallbackRecommendations(settings, mode, mediaCategory, existingTitleSet);
   }
 }
 
@@ -227,13 +249,16 @@ Return ONLY a valid JSON object matching:
 function getFallbackRecommendations(
   settings: UserSettings,
   mode: 'compromise' | 'partner1_solo' | 'partner2_solo',
-  mediaCategory: 'all' | 'movies' | 'games' | 'books'
+  mediaCategory: 'all' | 'movies' | 'games' | 'books',
+  existingTitles: Set<string> = new Set()
 ): GeminiRecommendation[] {
   const p1 = settings.partner1Name || 'Partner 1';
   const p2 = settings.partner2Name || 'Partner 2';
 
+  let pool: GeminiRecommendation[] = [];
+
   if (mode === 'partner1_solo') {
-    return [
+    pool = [
       {
         title: 'Queen Charlotte: A Bridgerton Story',
         type: 'tv',
@@ -266,11 +291,20 @@ function getFallbackRecommendations(
         posterUrl: 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=600',
         audience: 'partner1',
       },
+      {
+        title: 'Fourth Wing',
+        type: 'book',
+        year: '2023',
+        creator: 'Rebecca Yarros',
+        genres: ['Fantasy', 'Dragons', 'Romance'],
+        reason: `Epic dragon rider fantasy academy with intense chemistry and gripping suspense for ${p1}.`,
+        matchScore: 93,
+        posterUrl: 'https://covers.openlibrary.org/b/id/13404768-L.jpg',
+        audience: 'partner1',
+      },
     ];
-  }
-
-  if (mode === 'partner2_solo') {
-    return [
+  } else if (mode === 'partner2_solo') {
+    pool = [
       {
         title: 'Dark',
         type: 'tv',
@@ -304,52 +338,89 @@ function getFallbackRecommendations(
         posterUrl: 'https://covers.openlibrary.org/b/id/10522438-L.jpg',
         audience: 'partner2',
       },
+      {
+        title: 'Blade Runner 2049',
+        type: 'movie',
+        year: '2017',
+        genres: ['Sci-Fi', 'Mystery', 'Neo-Noir'],
+        reason: `Visually stunning sci-fi masterpiece with rich cyberpunk worldbuilding for ${p2}.`,
+        matchScore: 94,
+        posterUrl: 'https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg',
+        audience: 'partner2',
+      },
+    ];
+  } else {
+    // Compromise / Shared Mode
+    pool = [
+      {
+        title: 'About Time',
+        type: 'movie',
+        year: '2013',
+        genres: ['Romance', 'Comedy', 'Sci-Fi'],
+        reason: `The ultimate compromise: combines heartwarming romantic charm for ${p1} with a clever time-travel premise that ${p2} will respect.`,
+        matchScore: 98,
+        posterUrl: 'https://image.tmdb.org/t/p/w500/i8MQC6hQ5Yl3l43s2N9y5vQ7k6.jpg',
+        audience: 'together',
+      },
+      {
+        title: 'Overcooked! 2',
+        type: 'game',
+        year: '2018',
+        genres: ['Party', 'Co-op', 'Casual'],
+        platforms: ['Switch', 'PS5', 'PC', 'Xbox'],
+        reason: `Pure co-op teamwork and chaotic laughter that brings both ${p1} and ${p2} together for 2-player game night.`,
+        matchScore: 96,
+        posterUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600',
+        audience: 'together',
+      },
+      {
+        title: 'The Midnight Library',
+        type: 'book',
+        year: '2020',
+        creator: 'Matt Haig',
+        genres: ['Fiction', 'Fantasy', 'Philosophical'],
+        reason: `A wonderful shared book club read: explores infinite alternate lives and heartwarming life perspective that both partners will love discussing.`,
+        matchScore: 95,
+        posterUrl: 'https://covers.openlibrary.org/b/id/10313768-L.jpg',
+        audience: 'together',
+      },
+      {
+        title: 'Palm Springs',
+        type: 'movie',
+        year: '2020',
+        genres: ['Comedy', 'Romance', 'Sci-Fi'],
+        reason: `Smart existential time-loop comedy that blends laugh-out-loud wedding banter with great high-concept sci-fi.`,
+        matchScore: 94,
+        posterUrl: 'https://image.tmdb.org/t/p/w500/1fgjgEPXz2zM2pP1oB1m1L0jV9D.jpg',
+        audience: 'together',
+      },
+      {
+        title: 'Project Hail Mary',
+        type: 'book',
+        year: '2021',
+        creator: 'Andy Weir',
+        genres: ['Sci-Fi', 'Adventure', 'Humor'],
+        reason: `An uplifting, witty space survival story filled with friendship and scientific optimism that makes for an incredible duo read.`,
+        matchScore: 93,
+        posterUrl: 'https://covers.openlibrary.org/b/id/10899321-L.jpg',
+        audience: 'together',
+      },
     ];
   }
 
-  // Compromise / Shared Mode
-  return [
-    {
-      title: 'About Time',
-      type: 'movie',
-      year: '2013',
-      genres: ['Romance', 'Comedy', 'Sci-Fi'],
-      reason: `The ultimate compromise: combines heartwarming romantic charm for ${p1} with a clever time-travel premise that ${p2} will respect.`,
-      matchScore: 98,
-      posterUrl: 'https://image.tmdb.org/t/p/w500/i8MQC6hQ5Yl3l43s2N9y5vQ7k6.jpg',
-      audience: 'together',
-    },
-    {
-      title: 'Overcooked! 2',
-      type: 'game',
-      year: '2018',
-      genres: ['Party', 'Co-op', 'Casual'],
-      platforms: ['Switch', 'PS5', 'PC', 'Xbox'],
-      reason: `Pure co-op teamwork and chaotic laughter that brings both ${p1} and ${p2} together for 2-player game night.`,
-      matchScore: 96,
-      posterUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600',
-      audience: 'together',
-    },
-    {
-      title: 'Tomorrow, and Tomorrow, and Tomorrow',
-      type: 'book',
-      year: '2022',
-      creator: 'Gabrielle Zevin',
-      genres: ['Fiction', 'Gaming Culture', 'Drama'],
-      reason: `An incredible shared 2-person book club read: merges rich character drama with video game nostalgia and worldbuilding.`,
-      matchScore: 95,
-      posterUrl: 'https://covers.openlibrary.org/b/id/12843003-L.jpg',
-      audience: 'together',
-    },
-    {
-      title: 'Palm Springs',
-      type: 'movie',
-      year: '2020',
-      genres: ['Comedy', 'Romance', 'Sci-Fi'],
-      reason: `Smart existential time-loop comedy that blends laugh-out-loud wedding banter with great high-concept sci-fi.`,
-      matchScore: 94,
-      posterUrl: 'https://image.tmdb.org/t/p/w500/1fgjgEPXz2zM2pP1oB1m1L0jV9D.jpg',
-      audience: 'together',
-    },
-  ];
+  // Filter out any titles already in the user's library (watched or backlog)
+  const available = pool.filter((item) => !existingTitles.has(item.title.trim().toLowerCase()));
+
+  // Filter by category if requested
+  if (mediaCategory === 'movies') {
+    return available.filter((item) => item.type === 'movie' || item.type === 'tv');
+  }
+  if (mediaCategory === 'games') {
+    return available.filter((item) => item.type === 'game');
+  }
+  if (mediaCategory === 'books') {
+    return available.filter((item) => item.type === 'book');
+  }
+
+  return available;
 }

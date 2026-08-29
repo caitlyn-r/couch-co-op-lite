@@ -10,16 +10,35 @@ describe('Gemini AI Engine', () => {
     expect(recs[0].matchScore).toBeGreaterThanOrEqual(90);
   });
 
-  it('generates Solo recommendations for Partner 1', async () => {
+  it('never recommends titles that are already watched or in the backlog', async () => {
+    const recs = await generateAIRecommendations(SAMPLE_WATCHLIST, DEFAULT_SETTINGS, 'compromise');
+    const existingTitles = new Set(SAMPLE_WATCHLIST.map((w) => w.title.toLowerCase()));
+
+    for (const rec of recs) {
+      expect(existingTitles.has(rec.title.toLowerCase())).toBe(false);
+    }
+  });
+
+  it('generates Solo recommendations for Partner 1 without watched duplicates', async () => {
     const recs = await generateAIRecommendations(SAMPLE_WATCHLIST, DEFAULT_SETTINGS, 'partner1_solo');
     expect(recs.length).toBeGreaterThan(0);
     expect(recs[0].audience).toBe('partner1');
+
+    const existingTitles = new Set(SAMPLE_WATCHLIST.map((w) => w.title.toLowerCase()));
+    for (const rec of recs) {
+      expect(existingTitles.has(rec.title.toLowerCase())).toBe(false);
+    }
   });
 
-  it('generates Solo recommendations for Partner 2', async () => {
+  it('generates Solo recommendations for Partner 2 without watched duplicates', async () => {
     const recs = await generateAIRecommendations(SAMPLE_WATCHLIST, DEFAULT_SETTINGS, 'partner2_solo');
     expect(recs.length).toBeGreaterThan(0);
     expect(recs[0].audience).toBe('partner2');
+
+    const existingTitles = new Set(SAMPLE_WATCHLIST.map((w) => w.title.toLowerCase()));
+    for (const rec of recs) {
+      expect(existingTitles.has(rec.title.toLowerCase())).toBe(false);
+    }
   });
 
   it('picks a winning feature during Vibe Roulette', async () => {
