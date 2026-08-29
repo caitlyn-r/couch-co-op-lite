@@ -63,6 +63,19 @@ npm run dev
 
 ---
 
+## ⚖️ Attributions & Data Sources
+
+This project connects to public and open APIs for metadata:
+* **TMDB**: This product uses the TMDB API but is not endorsed or certified by TMDB.
+* **RAWG**: Video game metadata and platforms provided by [RAWG.io](https://rawg.io).
+* **Open Library**: Book covers, authors, and metadata provided by [Open Library (Internet Archive)](https://openlibrary.org).
+* **Google Gemini**: AI taste matchmaking and roulette features powered by [Google AI Studio](https://aistudio.google.com).
+
+---
+
 ## 📄 License
 
-MIT © [Caitlyn](https://github.com/caitlyn-r)
+This project is open source and available under the [MIT License](./LICENSE).
+
+Copyright (c) 2026 [Caitlyn](https://github.com/caitlyn-r)
+

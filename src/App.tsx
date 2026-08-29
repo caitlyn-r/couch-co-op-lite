@@ -393,9 +393,12 @@ export function App() {
       />
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-surface-border/60 py-6 text-center text-xs text-slate-500">
-        <p>
-          🛋️ <strong>Couch Co-Op Lite</strong> • Shared & Solo Movies, Games & Books Tracker • Powered by Gemini & Open Library
+      <footer className="mt-auto border-t border-surface-border/60 py-6 px-4 text-center text-xs text-slate-400 space-y-2">
+        <p className="text-slate-300 font-medium">
+          🛋️ <strong>Couch Co-Op Lite</strong> • Shared & Solo Entertainment Tracker
+        </p>
+        <p className="text-[11px] text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          This product uses the TMDB API but is not endorsed or certified by TMDB. Video game data provided by RAWG. Book metadata and covers provided by Open Library. AI features powered by Google Gemini API.
         </p>
       </footer>
 
