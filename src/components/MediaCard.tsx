@@ -35,10 +35,10 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     entry.partner1Rating && entry.partner2Rating
       ? ((entry.partner1Rating + entry.partner2Rating) / 2).toFixed(1)
       : entry.partner1Rating
-      ? entry.partner1Rating.toFixed(1)
-      : entry.partner2Rating
-      ? entry.partner2Rating.toFixed(1)
-      : null;
+        ? entry.partner1Rating.toFixed(1)
+        : entry.partner2Rating
+          ? entry.partner2Rating.toFixed(1)
+          : null;
 
   const handleSaveNotes = () => {
     onUpdateNotes(entry.id, tempNotes);
@@ -95,7 +95,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
 
   return (
     <div className="glass-card rounded-2xl overflow-hidden flex flex-col group transition-all duration-300 hover:border-slate-500/50 hover:shadow-xl hover:shadow-primary-950/20">
-      
+
       {/* Top Poster Banner */}
       <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-slate-900">
         <img
@@ -105,10 +105,10 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent" />
-        
+
         {/* Floating Badges */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
-          
+
           {/* Media Format */}
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-black/70 backdrop-blur-md text-white border border-white/10">
             {getMediaIcon()}
@@ -121,13 +121,12 @@ export const MediaCard: React.FC<MediaCardProps> = ({
               value={entry.audience}
               onChange={(e) => onUpdateAudience(entry.id, e.target.value as AudienceType)}
               title="Select Audience (Together or Solo)"
-              className={`text-xs font-bold pl-2.5 pr-6 py-1 rounded-lg border backdrop-blur-md cursor-pointer transition-all outline-none appearance-none ${
-                entry.audience === 'together'
-                  ? 'bg-purple-600/80 text-white border-purple-400/40 hover:bg-purple-600'
-                  : entry.audience === 'partner1'
+              className={`text-xs font-bold pl-2.5 pr-6 py-1 rounded-lg border backdrop-blur-md cursor-pointer transition-all outline-none appearance-none ${entry.audience === 'together'
+                ? 'bg-purple-600/80 text-white border-purple-400/40 hover:bg-purple-600'
+                : entry.audience === 'partner1'
                   ? 'bg-pink-600/80 text-white border-pink-400/40 hover:bg-pink-600'
                   : 'bg-blue-600/80 text-white border-blue-400/40 hover:bg-blue-600'
-              }`}
+                }`}
             >
               <option value="together" className="bg-slate-900 text-white">
                 🛋️ Together
@@ -148,13 +147,12 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           <select
             value={entry.status}
             onChange={(e) => onUpdateStatus(entry.id, e.target.value as WatchStatus)}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg border backdrop-blur-md cursor-pointer transition-all outline-none ${
-              entry.status === 'watched'
-                ? 'bg-emerald-600/90 text-white border-emerald-400/30'
-                : entry.status === 'watching'
+            className={`text-xs font-bold px-3 py-1.5 rounded-lg border backdrop-blur-md cursor-pointer transition-all outline-none ${entry.status === 'watched'
+              ? 'bg-emerald-600/90 text-white border-emerald-400/30'
+              : entry.status === 'watching'
                 ? 'bg-amber-600/90 text-white border-amber-400/30 animate-pulse-slow'
                 : 'bg-slate-800/90 text-slate-200 border-white/10 hover:bg-slate-700/90'
-            }`}
+              }`}
           >
             {getStatusOptions().map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
@@ -169,7 +167,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           <h3 className="text-lg font-bold text-white tracking-tight drop-shadow-md truncate">
             {entry.title}
           </h3>
-          
+
           <div className="flex items-center gap-2 text-xs text-slate-300 mt-0.5 flex-wrap">
             {entry.creator && (
               <span className="font-semibold text-slate-200 bg-black/50 px-2 py-0.5 rounded-md">
@@ -192,7 +190,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
 
       {/* Card Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
-        
+
         {/* Rating or Eagerness Interest Section */}
         {entry.status === 'watched' ? (
           /* Watched Duo Ratings */
@@ -265,9 +263,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({
                 >
                   <option value="" className="bg-slate-900 text-slate-400">Set...</option>
                   <option value="hyped" className="bg-slate-900 text-orange-400">🔥 Hyped</option>
-                  <option value="interested" className="bg-slate-900 text-emerald-400">👍 Down</option>
+                  <option value="interested" className="bg-slate-900 text-emerald-400">👎 Down</option>
                   <option value="neutral" className="bg-slate-900 text-slate-400">🤷 Neutral</option>
-                  <option value="pass" className="bg-slate-900 text-red-400">👎 Pass</option>
+                  <option value="pass" className="bg-slate-900 text-red-400">🚫 Pass</option>
                 </select>
               </div>
 
@@ -281,9 +279,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({
                 >
                   <option value="" className="bg-slate-900 text-slate-400">Set...</option>
                   <option value="hyped" className="bg-slate-900 text-orange-400">🔥 Hyped</option>
-                  <option value="interested" className="bg-slate-900 text-emerald-400">👍 Down</option>
+                  <option value="interested" className="bg-slate-900 text-emerald-400">👍👎Down</option>
                   <option value="neutral" className="bg-slate-900 text-slate-400">🤷 Neutral</option>
-                  <option value="pass" className="bg-slate-900 text-red-400">👎 Pass</option>
+                  <option value="pass" className="bg-slate-900 text-red-400"> Pass</option>
                 </select>
               </div>
             </div>
