@@ -115,43 +115,32 @@ export const MediaCard: React.FC<MediaCardProps> = ({
             <span>{getMediaLabel()}</span>
           </span>
 
-          {/* Audience Badge (Together vs Solo) */}
-          <button
-            onClick={() => {
-              const nextAudience: AudienceType =
+          {/* Audience Dropdown Selection (Together vs Solo) */}
+          <div className="relative inline-flex items-center">
+            <select
+              value={entry.audience}
+              onChange={(e) => onUpdateAudience(entry.id, e.target.value as AudienceType)}
+              title="Select Audience (Together or Solo)"
+              className={`text-xs font-bold pl-2.5 pr-6 py-1 rounded-lg border backdrop-blur-md cursor-pointer transition-all outline-none appearance-none ${
                 entry.audience === 'together'
-                  ? 'partner1'
+                  ? 'bg-purple-600/80 text-white border-purple-400/40 hover:bg-purple-600'
                   : entry.audience === 'partner1'
-                  ? 'partner2'
-                  : 'together';
-              onUpdateAudience(entry.id, nextAudience);
-            }}
-            title="Click to switch Audience (Together ↔ Solo)"
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold backdrop-blur-md border transition-all cursor-pointer ${
-              entry.audience === 'together'
-                ? 'bg-purple-600/80 text-white border-purple-400/40 hover:bg-purple-500'
-                : entry.audience === 'partner1'
-                ? 'bg-pink-600/80 text-white border-pink-400/40 hover:bg-pink-500'
-                : 'bg-blue-600/80 text-white border-blue-400/40 hover:bg-blue-500'
-            }`}
-          >
-            {entry.audience === 'together' ? (
-              <>
-                <Users className="w-3 h-3" />
-                <span>Together</span>
-              </>
-            ) : entry.audience === 'partner1' ? (
-              <>
-                <User className="w-3 h-3" />
-                <span>{p1} Solo</span>
-              </>
-            ) : (
-              <>
-                <User className="w-3 h-3" />
-                <span>{p2} Solo</span>
-              </>
-            )}
-          </button>
+                  ? 'bg-pink-600/80 text-white border-pink-400/40 hover:bg-pink-600'
+                  : 'bg-blue-600/80 text-white border-blue-400/40 hover:bg-blue-600'
+              }`}
+            >
+              <option value="together" className="bg-slate-900 text-white">
+                🛋️ Together
+              </option>
+              <option value="partner1" className="bg-slate-900 text-white">
+                👤 {p1} Solo
+              </option>
+              <option value="partner2" className="bg-slate-900 text-white">
+                👤 {p2} Solo
+              </option>
+            </select>
+            <ChevronDown className="w-3 h-3 text-white/80 absolute right-1.5 pointer-events-none" />
+          </div>
         </div>
 
         {/* Status Selector on Top Right */}
