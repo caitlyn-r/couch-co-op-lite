@@ -13,20 +13,38 @@ import {
   loadLocalSettings,
   saveLocalSettings,
   SAMPLE_WATCHLIST,
+  parseInviteConfig,
 } from './lib/storage';
 import { fetchWatchlistFromSheets, syncEntryToSheets, bulkSyncToSheets } from './lib/sheets';
-import { Search, Plus, Sparkles, Film, Gamepad2, BookOpen } from 'lucide-react';
+import { Search, Plus, Sparkles, CheckCircle, X } from 'lucide-react';
 
 export function App() {
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>(loadLocalWatchlist);
   const [settings, setSettings] = useState<UserSettings>(loadLocalSettings);
   const [activeTab, setActiveTab] = useState<'watchlist' | 'watched' | 'matchmaker' | 'roulette'>('watchlist');
   const [selectedAudience, setSelectedAudience] = useState<AudienceType | 'all'>('together');
+  const [welcomeBanner, setWelcomeBanner] = useState<string | null>(null);
 
   // Modals
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Check URL hash for 1-click partner invite configuration on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('#invite=')) {
+      const imported = parseInviteConfig(window.location.hash);
+      if (imported) {
+        setSettings((prev) => {
+          const updated = { ...prev, ...imported };
+          saveLocalSettings(updated);
+          return updated;
+        });
+        setWelcomeBanner(`🎉 Welcome! You are now connected to ${imported.partner1Name || 'your partner'}'s Couch Co-Op library.`);
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+  }, []);
 
   // In-library search & filters
   const [filterQuery, setFilterQuery] = useState('');
@@ -247,6 +265,22 @@ export function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         
+        {/* Welcome Toast / Alert from 1-Click Invite */}
+        {welcomeBanner && (
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-emerald-900/60 to-teal-900/60 border border-emerald-500/40 text-emerald-100 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <span className="text-sm font-semibold">{welcomeBanner}</span>
+            </div>
+            <button
+              onClick={() => setWelcomeBanner(null)}
+              className="p-1 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-800/50 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Top Stats Overview */}
         <StatsBar watchlist={watchlist} settings={settings} />
 
