@@ -67,12 +67,34 @@ export const SAMPLE_WATCHLIST: WatchlistEntry[] = [
   },
   {
     id: 'sample-3',
+    tmdbId: 693134,
+    title: 'Dune: Part Two',
+    type: 'movie',
+    year: '2024',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+    backdropUrl: 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5200fr.jpg',
+    overview: 'Follow the mythic journey of Paul Atreides as he unites with Chani and the Fremen while on a path of revenge.',
+    genres: ['Sci-Fi', 'Adventure'],
+    status: 'watchlist',
+    priority: 'high',
+    audience: 'together',
+    addedBy: 'Player 1',
+    partner1Rating: null,
+    partner2Rating: null,
+    partner1Interest: 'hyped',
+    partner2Interest: 'interested',
+    notes: 'Planning for next Friday movie night with popcorn.',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-4',
     tmdbId: 91363,
     title: 'Bridgerton',
     type: 'tv',
     year: '2020',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/luoKQM5wAS1rCDBfnG1w5MmYEV8.jpg',
-    backdropUrl: 'https://image.tmdb.org/t/p/original/mZjZgYDCi2VN0r74H376aQxG5.jpg',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/luoK946wiPtioZXIL49qp762i5E.jpg',
+    backdropUrl: 'https://image.tmdb.org/t/p/original/c5qI5sO26hWqK9t6iT5gG2gGkY.jpg',
     overview: 'Wealth, lust, and betrayal set against the backdrop of Regency-era England, seen through the eyes of the powerful Bridgerton family.',
     genres: ['Drama', 'Romance', 'Period'],
     status: 'watching',
@@ -88,7 +110,7 @@ export const SAMPLE_WATCHLIST: WatchlistEntry[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: 'sample-4',
+    id: 'sample-5',
     title: 'It Takes Two',
     type: 'game',
     year: '2021',
@@ -111,7 +133,30 @@ export const SAMPLE_WATCHLIST: WatchlistEntry[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: 'sample-5',
+    id: 'sample-6',
+    title: 'Baldur’s Gate 3',
+    type: 'game',
+    year: '2023',
+    posterUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=60',
+    overview: 'Gather your party and return to the Forgotten Realms in a tale of fellowship and betrayal, sacrifice and survival.',
+    genres: ['RPG', 'Strategy', 'Co-op Story'],
+    status: 'watchlist',
+    priority: 'high',
+    audience: 'together',
+    addedBy: 'Player 2',
+    creator: 'Larian Studios',
+    platforms: ['PC', 'PS5'],
+    length: '80+ hours',
+    partner1Rating: null,
+    partner2Rating: null,
+    partner1Interest: 'hyped',
+    partner2Interest: 'hyped',
+    notes: 'Starting a co-op campaign over the holiday break.',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-7',
     title: 'Elden Ring',
     type: 'game',
     year: '2022',
@@ -134,7 +179,7 @@ export const SAMPLE_WATCHLIST: WatchlistEntry[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: 'sample-6',
+    id: 'sample-8',
     title: 'Tomorrow, and Tomorrow, and Tomorrow',
     type: 'book',
     year: '2022',
@@ -156,7 +201,29 @@ export const SAMPLE_WATCHLIST: WatchlistEntry[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: 'sample-7',
+    id: 'sample-9',
+    title: 'Fourth Wing',
+    type: 'book',
+    year: '2023',
+    posterUrl: 'https://covers.openlibrary.org/b/id/13404768-L.jpg',
+    overview: 'Twenty-year-old Violet Sorrengail was destined for a quiet life among books, until she was ordered to join the dragon riders.',
+    genres: ['Fantasy', 'Dragons', 'Romance'],
+    status: 'watchlist',
+    priority: 'medium',
+    audience: 'partner1',
+    addedBy: 'Player 1',
+    creator: 'Rebecca Yarros',
+    length: '512 pages',
+    partner1Rating: null,
+    partner2Rating: null,
+    partner1Interest: 'hyped',
+    partner2Interest: 'pass',
+    notes: 'Everyone on BookTok is obsessed with this.',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-10',
     title: 'Twilight',
     type: 'book',
     year: '2005',
@@ -186,7 +253,12 @@ export function loadLocalWatchlist(): WatchlistEntry[] {
       saveLocalWatchlist(SAMPLE_WATCHLIST);
       return SAMPLE_WATCHLIST;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      saveLocalWatchlist(SAMPLE_WATCHLIST);
+      return SAMPLE_WATCHLIST;
+    }
+    return parsed;
   } catch (err) {
     console.error('Failed to load watchlist from localStorage:', err);
     return SAMPLE_WATCHLIST;
