@@ -455,13 +455,13 @@ function getFallbackRecommendations(
           audience: 'together',
         },
         {
-          title: 'Severance',
+          title: 'Stranger Things',
           type: 'tv',
-          year: '2022',
-          genres: ['Sci-Fi', 'Thriller', 'Mystery'],
-          reason: `Gripping corporate mystery and dark humor that will spark deep theories and discussions after every single episode.`,
+          year: '2016',
+          genres: ['Sci-Fi', 'Drama', 'Mystery'],
+          reason: `Gripping supernatural mystery and nostalgic 80s vibes that will keep you on the edge of your seat together.`,
           matchScore: 96,
-          posterUrl: 'https://image.tmdb.org/t/p/w500/abWecB99TjVn7Ppsg1k3dY8E0o1.jpg',
+          posterUrl: 'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
           audience: 'together',
         },
         {
