@@ -39,3 +39,10 @@ Turn any blank Google Sheet into your private, real-time database in under **60 
 4. Click **Test & Sync** → **Save Settings**.
 
 🎉 **You're all done!** Your watchlist is now live-synced to your Google Sheet in real-time. Both you and your partner can access the app from anywhere!
+
+---
+
+## 🔒 Security & Privacy Notice
+
+* **Keep your Web App URL private**: Your Google Apps Script Web App URL acts as a direct endpoint to your sheet. Treat it like a password — do not post it on public forums, GitHub issues, or public screenshots.
+* **Access scope**: Setting *"Who has access: Anyone"* allows your client-side browser to send updates without requiring complex Google OAuth login popups. It grants access **only to this specific spreadsheet**, not your entire Google account.

@@ -20,6 +20,7 @@ export const GeminiMatchmaker: React.FC<GeminiMatchmakerProps> = ({
   const [mode, setMode] = useState<'compromise' | 'partner1_solo' | 'partner2_solo'>('compromise');
   const [category, setCategory] = useState<'all' | 'movies' | 'games' | 'books'>('all');
   const [recommendations, setRecommendations] = useState<GeminiRecommendation[]>([]);
+  const [seenTitles, setSeenTitles] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [addedTitles, setAddedTitles] = useState<Set<string>>(new Set());
@@ -27,10 +28,14 @@ export const GeminiMatchmaker: React.FC<GeminiMatchmakerProps> = ({
   const p1 = settings.partner1Name || 'Partner 1';
   const p2 = settings.partner2Name || 'Partner 2';
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (resetSeen = false) => {
     setIsLoading(true);
     try {
-      const recs = await generateAIRecommendations(watchlist, settings, mode, category);
+      const currentTitles = recommendations.map((r) => r.title.toLowerCase());
+      const nextSeen = resetSeen ? new Set<string>() : new Set([...seenTitles, ...currentTitles]);
+      setSeenTitles(nextSeen);
+
+      const recs = await generateAIRecommendations(watchlist, settings, mode, category, nextSeen);
       setRecommendations(recs);
       setHasGenerated(true);
     } catch (err) {
@@ -204,7 +209,7 @@ export const GeminiMatchmaker: React.FC<GeminiMatchmakerProps> = ({
 
           <div className="pt-3 flex items-center gap-4 flex-wrap">
             <button
-              onClick={handleGenerate}
+              onClick={() => handleGenerate()}
               disabled={isLoading}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-600/30 transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
             >
@@ -239,7 +244,9 @@ export const GeminiMatchmaker: React.FC<GeminiMatchmakerProps> = ({
                   : `👤 Top Solo Picks for ${p2}`}
               </span>
             </h2>
-            <span className="text-xs text-slate-400">5 tailored suggestions</span>
+            <span className="text-xs text-slate-400">
+              {recommendations.length} tailored suggestion{recommendations.length === 1 ? '' : 's'}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
@@ -255,6 +262,14 @@ export const GeminiMatchmaker: React.FC<GeminiMatchmakerProps> = ({
                     <img
                       src={getPosterUrl(rec.posterUrl, 'w342')}
                       alt={rec.title}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          rec.type === 'game'
+                            ? 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=80'
+                            : rec.type === 'book'
+                            ? 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500&auto=format&fit=crop&q=80'
+                            : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
+                      }}
                       className="w-20 sm:w-24 aspect-[2/3] object-cover rounded-xl shadow-lg bg-slate-900 flex-shrink-0"
                     />
 

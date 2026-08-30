@@ -16,6 +16,7 @@ import {
   parseInviteConfig,
 } from './lib/storage';
 import { fetchWatchlistFromSheets, syncEntryToSheets, bulkSyncToSheets } from './lib/sheets';
+import { fuzzySimilarity, normalizeForSearch } from './lib/fuzzy';
 import { Search, Plus, Sparkles, CheckCircle, X } from 'lucide-react';
 
 export function App() {
@@ -97,6 +98,22 @@ export function App() {
 
     if (settings.sheetsSyncUrl) {
       syncEntryToSheets(settings.sheetsSyncUrl, newEntry, 'add');
+    }
+  };
+
+  // Bulk add entries (Quick Paste)
+  const handleBulkAddEntries = (entriesData: Array<Omit<WatchlistEntry, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    const newEntries: WatchlistEntry[] = entriesData.map((entryData, index) => ({
+      ...entryData,
+      id: 'item-' + (Date.now() + index) + '-' + Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(Date.now() - index * 1000).toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    setWatchlist((prev) => [...newEntries, ...prev]);
+
+    if (settings.sheetsSyncUrl) {
+      bulkSyncToSheets(settings.sheetsSyncUrl, [...newEntries, ...watchlist]);
     }
   };
 
@@ -209,12 +226,12 @@ export function App() {
           return false;
         }
 
-        // Search text
+        // Search text with fuzzy matching
         if (filterQuery.trim()) {
-          const q = filterQuery.toLowerCase();
-          const matchTitle = item.title.toLowerCase().includes(q);
-          const matchCreator = (item.creator || '').toLowerCase().includes(q);
-          const matchGenre = item.genres.some((g) => g.toLowerCase().includes(q));
+          const q = filterQuery.toLowerCase().trim();
+          const matchTitle = item.title.toLowerCase().includes(q) || fuzzySimilarity(q, item.title) >= 0.55;
+          const matchCreator = (item.creator || '').toLowerCase().includes(q) || (item.creator ? fuzzySimilarity(q, item.creator) >= 0.55 : false);
+          const matchGenre = item.genres.some((g) => g.toLowerCase().includes(q) || fuzzySimilarity(q, g) >= 0.6);
           if (!matchTitle && !matchCreator && !matchGenre) return false;
         }
 
@@ -242,7 +259,7 @@ export function App() {
 
   const watchlistCount = watchlist.filter((w) => w.status === 'watchlist' || w.status === 'watching').length;
   const watchedCount = watchlist.filter((w) => w.status === 'watched').length;
-  const existingTitles = useMemo(() => new Set(watchlist.map((w) => w.title.toLowerCase())), [watchlist]);
+  const existingTitles = useMemo(() => new Set(watchlist.map((w) => normalizeForSearch(w.title))), [watchlist]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-slate-100">
@@ -263,7 +280,7 @@ export function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 lg:pb-8 space-y-6 sm:space-y-8">
         
         {/* Welcome Toast / Alert from 1-Click Invite */}
         {welcomeBanner && (
@@ -412,6 +429,7 @@ export function App() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onAddEntry={handleAddEntry}
+        onBulkAddEntries={handleBulkAddEntries}
         settings={settings}
         existingTitles={existingTitles}
       />

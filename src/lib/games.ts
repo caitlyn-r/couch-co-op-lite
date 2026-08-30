@@ -1,4 +1,5 @@
 import { GameSearchResult } from '../types';
+import { fuzzySimilarity } from './fuzzy';
 
 const FALLBACK_GAMES: GameSearchResult[] = [
   {
@@ -66,6 +67,50 @@ const FALLBACK_GAMES: GameSearchResult[] = [
     platforms: ['Nintendo Switch'],
     genres: ['Life Sim', 'Cozy', 'Casual'],
     isCoop: true,
+  },
+  {
+    id: 4200,
+    name: 'Portal 2',
+    released: '2011-04-18',
+    background_image: 'https://images.unsplash.com/photo-1612287233207-68b368735b54?w=600&auto=format&fit=crop&q=60',
+    rating: 4.9,
+    metacritic: 95,
+    platforms: ['PC', 'Nintendo Switch', 'PlayStation 3', 'Xbox 360'],
+    genres: ['Puzzle', 'Sci-Fi', 'Co-op Puzzle'],
+    isCoop: true,
+  },
+  {
+    id: 28,
+    name: 'Hades',
+    released: '2020-09-17',
+    background_image: 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=600&auto=format&fit=crop&q=60',
+    rating: 4.9,
+    metacritic: 93,
+    platforms: ['PC', 'Nintendo Switch', 'PlayStation 5', 'Xbox Series S/X'],
+    genres: ['Action Roguelike', 'Mythology', 'Hack and Slash'],
+    isCoop: false,
+  },
+  {
+    id: 9767,
+    name: 'Hollow Knight',
+    released: '2017-02-24',
+    background_image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=60',
+    rating: 4.8,
+    metacritic: 90,
+    platforms: ['PC', 'Nintendo Switch', 'PlayStation 4', 'Xbox One'],
+    genres: ['Metroidvania', 'Platformer', 'Atmospheric'],
+    isCoop: false,
+  },
+  {
+    id: 22511,
+    name: 'The Legend of Zelda: Tears of the Kingdom',
+    released: '2023-05-12',
+    background_image: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=60',
+    rating: 4.9,
+    metacritic: 96,
+    platforms: ['Nintendo Switch'],
+    genres: ['Action', 'Adventure', 'Open World'],
+    isCoop: false,
   }
 ];
 
@@ -74,10 +119,18 @@ export async function searchGamesRAWG(query: string, apiKey?: string): Promise<G
   if (!trimmed) return FALLBACK_GAMES;
 
   if (!apiKey) {
-    return FALLBACK_GAMES.filter((g) =>
-      g.name.toLowerCase().includes(trimmed.toLowerCase()) ||
-      g.genres?.some((genre) => genre.toLowerCase().includes(trimmed.toLowerCase()))
-    );
+    const ranked = FALLBACK_GAMES.map((g) => {
+      const score = Math.max(
+        fuzzySimilarity(trimmed, g.name),
+        ...(g.genres || []).map((genre) => fuzzySimilarity(trimmed, genre) * 0.6)
+      );
+      return { g, score };
+    })
+      .filter((r) => r.score >= 0.45)
+      .sort((a, b) => b.score - a.score)
+      .map((r) => r.g);
+
+    return ranked.length > 0 ? ranked : FALLBACK_GAMES.slice(0, 4);
   }
 
   try {
@@ -101,7 +154,7 @@ export async function searchGamesRAWG(query: string, apiKey?: string): Promise<G
   } catch (err) {
     console.error('RAWG Search Error:', err);
     return FALLBACK_GAMES.filter((g) =>
-      g.name.toLowerCase().includes(trimmed.toLowerCase())
+      fuzzySimilarity(trimmed, g.name) >= 0.45
     );
   }
 }

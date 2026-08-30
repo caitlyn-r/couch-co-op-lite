@@ -45,6 +45,7 @@ export const VibeRoulette: React.FC<VibeRouletteProps> = ({
   const [customPrompt, setCustomPrompt] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<VibeRouletteResult | null>(null);
+  const [seenPicks, setSeenPicks] = useState<Set<string>>(new Set());
   const [hasStarted, setHasStarted] = useState(false);
 
   const activeVibe = customPrompt.trim() || selectedPrompt;
@@ -52,11 +53,14 @@ export const VibeRoulette: React.FC<VibeRouletteProps> = ({
 
   const handleSpin = async () => {
     setIsSpinning(true);
-    setResult(null);
     setHasStarted(false);
 
     try {
-      const pick = await pickMovieNightVibe(watchlist, activeVibe, settings, activeCategory);
+      const nextSeen = result ? new Set([...seenPicks, result.title.toLowerCase()]) : seenPicks;
+      setSeenPicks(nextSeen);
+      setResult(null);
+
+      const pick = await pickMovieNightVibe(watchlist, activeVibe, settings, activeCategory, nextSeen);
       setResult(pick);
 
       confetti({

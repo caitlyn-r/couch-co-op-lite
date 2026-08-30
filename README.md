@@ -25,8 +25,9 @@ Built with **React 18 + Vite**, **Google Gemini Free API**, **TMDB**, **RAWG**, 
   2. 👤 **Just for {Partner 1}**: AI picks tailored strictly to Partner 1's solo likes.
   3. 👤 **Just for {Partner 2}**: AI picks tailored strictly to Partner 2's solo likes.
 - 🎲 **Multi-Format Vibe Roulette**: Spin for **Movie Night**, **Game Night**, or your **Next Book Read** with confetti celebrations!
+- ⚡ **Quick Paste (Bulk Add)**: Copy/paste a list of movies, games, or books to seed your **Watched / Completed** history in seconds!
 - 📊 **Google Sheets Sync**: Real-time collaborative database using a lightweight 1-file Google Apps Script webhook.
-- 🔒 **Zero Server Secrets**: All API keys stay in your browser's `localStorage` — completely safe for public GitHub forks.
+- 🔒 **Zero Server Secrets**: All API keys stay in your browser's `localStorage` — safe for public GitHub forks.
 
 ---
 
@@ -60,6 +61,14 @@ npm run dev
 | **Open Library API** | Books & Audiobooks | **NO KEY NEEDED!** | 100% Free Open Source |
 | **RAWG API** | Video Games | Optional Free Key | [RAWG.io](https://rawg.io/apidocs) |
 | **Google Sheets Sync** | Shared Database | Script URL | See [`google-apps-script/README.md`](./google-apps-script/README.md) |
+
+---
+
+## 🔒 Privacy & Data Storage
+
+* **Local-First Architecture**: Your API keys and library entries are stored in your browser's private `localStorage`. No centralized server ever receives or stores your data.
+* **Backup & Sync**: If you clear your browser cookies/history without Google Sheets sync enabled, local data is reset. We recommend connecting **Google Sheets sync** or using **Export JSON** in Settings for periodic manual backups.
+* **1-Click Partner Invite Link**: The invite link contains your encoded API keys in the URL hash fragment (`#invite=...`) so that partner devices can pair instantly without typing keys. **Send this link privately (SMS/chat)** and avoid posting it on public forums or issue trackers.
 
 ---
 

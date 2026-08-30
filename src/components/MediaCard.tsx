@@ -279,9 +279,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({
                 >
                   <option value="" className="bg-slate-900 text-slate-400">Set...</option>
                   <option value="hyped" className="bg-slate-900 text-orange-400">🔥 Hyped</option>
-                  <option value="interested" className="bg-slate-900 text-emerald-400">👍👎Down</option>
+                  <option value="interested" className="bg-slate-900 text-emerald-400">👎 Down</option>
                   <option value="neutral" className="bg-slate-900 text-slate-400">🤷 Neutral</option>
-                  <option value="pass" className="bg-slate-900 text-red-400"> Pass</option>
+                  <option value="pass" className="bg-slate-900 text-red-400">🚫 Pass</option>
                 </select>
               </div>
             </div>

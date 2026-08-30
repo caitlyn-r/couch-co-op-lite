@@ -223,6 +223,71 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
 
       </div>
+
+      {/* Mobile Bottom Navigation Bar (< lg) */}
+      <nav aria-label="Mobile Navigation" className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-surface-border px-2 py-2 flex items-center justify-around shadow-2xl">
+        <button
+          onClick={() => setActiveTab('watchlist')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[11px] font-semibold transition-all relative ${
+            activeTab === 'watchlist'
+              ? 'text-primary-400 bg-primary-500/15'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className="relative">
+            <Film className="w-5 h-5" />
+            {watchlistCount > 0 && (
+              <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-primary-600 text-white">
+                {watchlistCount}
+              </span>
+            )}
+          </div>
+          <span>Backlog</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('watched')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[11px] font-semibold transition-all relative ${
+            activeTab === 'watched'
+              ? 'text-primary-400 bg-primary-500/15'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className="relative">
+            <CheckCircle2 className="w-5 h-5" />
+            {watchedCount > 0 && (
+              <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-primary-600 text-white">
+                {watchedCount}
+              </span>
+            )}
+          </div>
+          <span>Completed</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('matchmaker')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[11px] font-semibold transition-all ${
+            activeTab === 'matchmaker'
+              ? 'text-purple-300 bg-purple-500/20'
+              : 'text-slate-400 hover:text-purple-300'
+          }`}
+        >
+          <Sparkles className={`w-5 h-5 ${activeTab === 'matchmaker' ? 'text-yellow-400 animate-pulse' : 'text-purple-400'}`} />
+          <span>AI Match</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('roulette')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[11px] font-semibold transition-all ${
+            activeTab === 'roulette'
+              ? 'text-amber-300 bg-amber-500/20'
+              : 'text-slate-400 hover:text-amber-300'
+          }`}
+        >
+          <Dices className={`w-5 h-5 ${activeTab === 'roulette' ? 'text-amber-400' : 'text-slate-400'}`} />
+          <span>Roulette</span>
+        </button>
+      </nav>
     </header>
   );
 };

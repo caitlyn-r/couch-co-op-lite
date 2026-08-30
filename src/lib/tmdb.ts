@@ -1,6 +1,5 @@
 import { TMDBSearchResult } from '../types';
-
-const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/';
+import { fuzzySimilarity } from './fuzzy';
 
 export const GENRE_MAP: Record<number, string> = {
   28: 'Action',
@@ -32,18 +31,6 @@ export const GENRE_MAP: Record<number, string> = {
   10768: 'War & Politics',
 };
 
-export function getPosterUrl(path?: string | null, size: 'w342' | 'w500' | 'original' = 'w500'): string {
-  if (!path) return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=60';
-  if (path.startsWith('http')) return path;
-  return `${TMDB_IMAGE_BASE}${size}${path}`;
-}
-
-export function getBackdropUrl(path?: string | null, size: 'w780' | 'w1280' | 'original' = 'w1280'): string {
-  if (!path) return 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?w=1280&auto=format&fit=crop&q=60';
-  if (path.startsWith('http')) return path;
-  return `${TMDB_IMAGE_BASE}${size}${path}`;
-}
-
 // Fallback search results when no TMDB API key is provided
 const FALLBACK_POPULAR_MEDIA: TMDBSearchResult[] = [
   {
@@ -69,6 +56,61 @@ const FALLBACK_POPULAR_MEDIA: TMDBSearchResult[] = [
     vote_average: 8.4,
   },
   {
+    id: 27205,
+    title: 'Inception',
+    media_type: 'movie',
+    release_date: '2010-07-15',
+    poster_path: '/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg',
+    backdrop_path: '/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
+    overview: 'Cobb steals information from his targets by entering their dreams. He is given the inverse task of planting an idea.',
+    genre_ids: [28, 878, 12],
+    vote_average: 8.4,
+  },
+  {
+    id: 157336,
+    title: 'Interstellar',
+    media_type: 'movie',
+    release_date: '2014-11-05',
+    poster_path: '/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
+    backdrop_path: '/rAiYTsqLtkvp92Jw8YkiHaSnMA9.jpg',
+    overview: 'The adventures of a group of explorers who make use of a newly discovered wormhole to surpass human space travel limitations.',
+    genre_ids: [12, 18, 878],
+    vote_average: 8.4,
+  },
+  {
+    id: 155,
+    title: 'The Dark Knight',
+    media_type: 'movie',
+    release_date: '2008-07-16',
+    poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+    backdrop_path: '/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg',
+    overview: 'Batman raises the stakes in his war on crime with the help of Lt. Jim Gordon and District Attorney Harvey Dent.',
+    genre_ids: [18, 28, 80, 53],
+    vote_average: 8.5,
+  },
+  {
+    id: 872585,
+    title: 'Oppenheimer',
+    media_type: 'movie',
+    release_date: '2023-07-19',
+    poster_path: '/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
+    backdrop_path: '/rLb2cwF3Pazuxaj0sRXQ037tGI1.jpg',
+    overview: 'The story of J. Robert Oppenheimer’s role in the development of the atomic bomb during World War II.',
+    genre_ids: [18, 36],
+    vote_average: 8.1,
+  },
+  {
+    id: 346698,
+    title: 'Barbie',
+    media_type: 'movie',
+    release_date: '2023-07-19',
+    poster_path: '/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg',
+    backdrop_path: '/nHf61UzkfFno5X1ofIhugCPus2R.jpg',
+    overview: 'Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land.',
+    genre_ids: [35, 12],
+    vote_average: 7.1,
+  },
+  {
     id: 533535,
     title: 'Deadpool & Wolverine',
     media_type: 'movie',
@@ -78,6 +120,17 @@ const FALLBACK_POPULAR_MEDIA: TMDBSearchResult[] = [
     overview: 'A listless Wade Wilson toils in civilian life with his days as the morally flexible mercenary behind him.',
     genre_ids: [28, 35, 878],
     vote_average: 7.7,
+  },
+  {
+    id: 124364,
+    name: 'The Bear',
+    media_type: 'tv',
+    first_air_date: '2022-06-23',
+    poster_path: '/sHFlB7hCBT537F7r4f5w5q9sS7m.jpg',
+    backdrop_path: '/n79e95BsmG6g6aJ6P7Z1b3M1Y8z.jpg',
+    overview: 'A young chef from the fine dining world comes home to Chicago to run his family Italian beef sandwich shop.',
+    genre_ids: [18, 35],
+    vote_average: 8.3,
   },
   {
     id: 93405,
@@ -111,6 +164,17 @@ const FALLBACK_POPULAR_MEDIA: TMDBSearchResult[] = [
     overview: 'Seven noble families fight for control of the mythical land of Westeros.',
     genre_ids: [10765, 18, 10759],
     vote_average: 8.4,
+  },
+  {
+    id: 91363,
+    name: 'Bridgerton',
+    media_type: 'tv',
+    first_air_date: '2020-12-25',
+    poster_path: '/luoK946wiPtioZXIL49qp762i5E.jpg',
+    backdrop_path: '/c5qI5sO26hWqK9t6iT5gG2gGkY.jpg',
+    overview: 'Wealth, lust, and betrayal set against the backdrop of Regency era England.',
+    genre_ids: [18, 10749],
+    vote_average: 8.1,
   }
 ];
 
@@ -123,13 +187,22 @@ export async function searchTMDB(
   if (!trimmed) return [];
 
   if (!apiKey) {
-    // Return filtered fallback results with simulated search match
-    return FALLBACK_POPULAR_MEDIA.filter((item) => {
-      const title = (item.title || item.name || '').toLowerCase();
-      const matchesText = title.includes(trimmed.toLowerCase());
-      const matchesType = filterType === 'all' || item.media_type === filterType;
-      return matchesText && matchesType;
-    });
+    // Return ranked results using fuzzy matching and substring scoring
+    const candidates = filterType === 'all'
+      ? FALLBACK_POPULAR_MEDIA
+      : FALLBACK_POPULAR_MEDIA.filter((item) => item.media_type === filterType);
+
+    const ranked = candidates
+      .map((item) => {
+        const title = item.title || item.name || '';
+        const score = fuzzySimilarity(trimmed, title);
+        return { item, score };
+      })
+      .filter((r) => r.score >= 0.45)
+      .sort((a, b) => b.score - a.score)
+      .map((r) => r.item);
+
+    return ranked.length > 0 ? ranked : candidates.slice(0, 4);
   }
 
   try {
@@ -221,4 +294,20 @@ export async function fetchTrendingTMDB(apiKey: string): Promise<TMDBSearchResul
     console.error('TMDB Trending Error:', err);
     return FALLBACK_POPULAR_MEDIA;
   }
+}
+
+export function getPosterUrl(path?: string | null, size: 'w185' | 'w342' | 'w500' | 'original' = 'w500'): string {
+  if (!path) {
+    return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
+  }
+  if (path.startsWith('http')) return path;
+  return `https://image.tmdb.org/t/p/${size}${path}`;
+}
+
+export function getBackdropUrl(path?: string | null, size: 'w780' | 'w1280' | 'original' = 'original'): string {
+  if (!path) {
+    return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1280&auto=format&fit=crop&q=80';
+  }
+  if (path.startsWith('http')) return path;
+  return `https://image.tmdb.org/t/p/${size}${path}`;
 }

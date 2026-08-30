@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Save, Key, Cloud, Users, Download, Upload, ExternalLink, RotateCcw, Film, Gamepad2, BookOpen, Share2, Check, Copy } from 'lucide-react';
+import { X, Save, Key, Cloud, Users, Download, Upload, ExternalLink, RotateCcw, Film, Gamepad2, BookOpen, Share2, Check, Copy, Heart } from 'lucide-react';
+
 import { UserSettings, WatchlistEntry } from '../types';
 import { exportWatchlistJSON, generateInviteLink } from '../lib/storage';
 import { bulkSyncToSheets } from '../lib/sheets';
@@ -124,6 +125,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             <p className="text-xs text-slate-300 leading-relaxed">
               Text this link to your partner or roommate. When they open it on their phone or laptop, it will automatically connect them to your shared Google Sheet & API keys with zero typing!
+            </p>
+            <p className="text-[11px] text-purple-300/80 leading-relaxed">
+              ⚠️ <em>Private use:</em> This link contains your encoded API keys for seamless pairing. Send it privately to your partner and do not post on public forums or issue trackers.
             </p>
 
             <button
@@ -358,6 +362,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {isTestingSync ? 'Testing...' : 'Test & Sync'}
               </button>
             </div>
+            <p className="text-[11px] text-slate-400">
+              🔒 Keep your webhook URL private like a password — anyone with this URL can read and write to your connected Google Sheet.
+            </p>
             {syncStatusMsg && (
               <p className="text-xs font-medium text-slate-200 p-2 rounded-lg bg-surface-light border border-surface-border">
                 {syncStatusMsg}
@@ -401,10 +408,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <span>Reset Demo</span>
               </button>
             </div>
+
+            <p className="text-[11px] text-slate-400">
+              💡 <em>Tip:</em> If not using Google Sheets sync, clearing your browser cookies/history will reset your local library. Use <strong>Export JSON</strong> periodically for manual backups.
+            </p>
+          </div>
+
+          {/* Subtle Project Support Link */}
+          <div className="pt-3 border-t border-surface-border/60 flex items-center justify-end gap-1.5 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
+              <Heart className="w-3.5 h-3.5 text-pink-400 fill-pink-400/20" />
+              <span>Enjoying Couch Co-Op?</span>
+            </span>
+            <a
+              href="https://ko-fi.com/caitlynr42"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] font-semibold text-pink-400 hover:text-pink-300 flex items-center gap-1 hover:underline transition-colors ml-1"
+            >
+              <span>Support on Ko-fi ☕</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
 
           {/* Save Button */}
-          <div className="pt-2 flex justify-end gap-3">
+          <div className="pt-1 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white">
               Cancel
             </button>

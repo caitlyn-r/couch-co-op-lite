@@ -98,6 +98,7 @@ export interface BookSearchResult {
   author_name?: string[];
   first_publish_year?: number;
   cover_i?: number;
+  posterUrl?: string;
   number_of_pages_median?: number;
   subject?: string[];
   overview?: string;
