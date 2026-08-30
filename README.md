@@ -86,5 +86,5 @@ This project connects to public and open APIs for metadata:
 
 This project is open source and available under the [MIT License](./LICENSE).
 
-Copyright (c) 2026 [Caitlyn](https://github.com/caitlyn-r)
+Copyright (c) 2026 [Caitlyn R](https://github.com/caitlyn-r)
 
