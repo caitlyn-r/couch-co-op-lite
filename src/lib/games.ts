@@ -1,5 +1,5 @@
 import { GameSearchResult } from '../types';
-import { fuzzySimilarity } from './fuzzy';
+import { fuzzySimilarity, sanitizeImageUrl } from './fuzzy';
 
 const FALLBACK_GAMES: GameSearchResult[] = [
   {
@@ -144,7 +144,10 @@ export async function searchGamesRAWG(query: string, apiKey?: string): Promise<G
       id: game.id,
       name: game.name,
       released: game.released,
-      background_image: game.background_image || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=60',
+      background_image: sanitizeImageUrl(
+        game.background_image,
+        'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=60'
+      ),
       rating: game.rating,
       metacritic: game.metacritic,
       platforms: (game.platforms || []).map((p: any) => p.platform?.name).filter(Boolean),

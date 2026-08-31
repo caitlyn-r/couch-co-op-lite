@@ -235,3 +235,25 @@ export function findBestFuzzyMatch<T>(
   if (!bestMatch) return null;
   return { item: bestMatch, score: highestScore };
 }
+
+/**
+ * Validate and sanitize image URLs to guarantee safe protocols (https://, http://, data:image/, blob:)
+ * Prevents javascript: or other malicious scheme injections.
+ */
+export function sanitizeImageUrl(
+  url?: string | null,
+  fallback = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80'
+): string {
+  if (!url || typeof url !== 'string') return fallback;
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('data:image/') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+  return fallback;
+}
+

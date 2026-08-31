@@ -1,5 +1,5 @@
 import { TMDBSearchResult } from '../types';
-import { fuzzySimilarity } from './fuzzy';
+import { fuzzySimilarity, sanitizeImageUrl } from './fuzzy';
 
 export const GENRE_MAP: Record<number, string> = {
   28: 'Action',
@@ -300,14 +300,14 @@ export function getPosterUrl(path?: string | null, size: 'w185' | 'w342' | 'w500
   if (!path) {
     return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
   }
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/${size}${path}`;
+  if (path.startsWith('http')) return sanitizeImageUrl(path);
+  return sanitizeImageUrl(`https://image.tmdb.org/t/p/${size}${path}`);
 }
 
 export function getBackdropUrl(path?: string | null, size: 'w780' | 'w1280' | 'original' = 'original'): string {
   if (!path) {
     return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1280&auto=format&fit=crop&q=80';
   }
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/${size}${path}`;
+  if (path.startsWith('http')) return sanitizeImageUrl(path);
+  return sanitizeImageUrl(`https://image.tmdb.org/t/p/${size}${path}`);
 }

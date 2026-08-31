@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toTitleCase, levenshteinDistance, fuzzySimilarity, findBestFuzzyMatch, normalizeForSearch } from '../lib/fuzzy';
+import { toTitleCase, levenshteinDistance, fuzzySimilarity, findBestFuzzyMatch, normalizeForSearch, sanitizeImageUrl } from '../lib/fuzzy';
 
 describe('Fuzzy Matching & String Utilities', () => {
   describe('toTitleCase', () => {
@@ -64,6 +64,24 @@ describe('Fuzzy Matching & String Utilities', () => {
       expect(normalizeForSearch('Dune: Part Two')).toBe('dune part 2');
       expect(normalizeForSearch("Baldur's Gate 3!")).toBe('baldurs gate 3');
       expect(normalizeForSearch('It Takes Two')).toBe('it takes 2');
+    });
+  });
+
+  describe('sanitizeImageUrl', () => {
+    it('allows valid https, http, blob and data URLs', () => {
+      expect(sanitizeImageUrl('https://image.tmdb.org/t/p/w500/test.jpg')).toBe('https://image.tmdb.org/t/p/w500/test.jpg');
+      expect(sanitizeImageUrl('http://example.com/cover.png')).toBe('http://example.com/cover.png');
+      expect(sanitizeImageUrl('data:image/svg+xml;base64,123')).toBe('data:image/svg+xml;base64,123');
+      expect(sanitizeImageUrl('blob:https://example.com/123')).toBe('blob:https://example.com/123');
+    });
+
+    it('rejects dangerous or invalid schemes and returns fallback', () => {
+      const fallback = 'https://images.unsplash.com/photo-fallback';
+      expect(sanitizeImageUrl('javascript:alert(1)', fallback)).toBe(fallback);
+      expect(sanitizeImageUrl('vbscript:msgbox', fallback)).toBe(fallback);
+      expect(sanitizeImageUrl('', fallback)).toBe(fallback);
+      expect(sanitizeImageUrl(null, fallback)).toBe(fallback);
+      expect(sanitizeImageUrl(undefined, fallback)).toBe(fallback);
     });
   });
 });

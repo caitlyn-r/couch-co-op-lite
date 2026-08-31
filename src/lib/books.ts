@@ -1,12 +1,12 @@
 import { BookSearchResult } from '../types';
-import { fuzzySimilarity } from './fuzzy';
+import { fuzzySimilarity, sanitizeImageUrl } from './fuzzy';
 
 export function getBookCoverUrl(coverId?: number | null, isbn?: string | null): string {
   if (isbn) {
-    return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+    return sanitizeImageUrl(`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`);
   }
   if (coverId) {
-    return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+    return sanitizeImageUrl(`https://covers.openlibrary.org/b/id/${coverId}-L.jpg`);
   }
   return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500&auto=format&fit=crop&q=60';
 }
@@ -167,9 +167,9 @@ export async function searchBooksOpenLibrary(query: string): Promise<BookSearchR
         first_publish_year: doc.first_publish_year,
         cover_i: doc.cover_i,
         posterUrl: doc.cover_i
-          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+          ? sanitizeImageUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`)
           : isbn
-          ? `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`
+          ? sanitizeImageUrl(`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`)
           : undefined,
         number_of_pages_median: doc.number_of_pages_median,
         subject: (doc.subject || []).slice(0, 4),
