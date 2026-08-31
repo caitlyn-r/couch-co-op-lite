@@ -8,6 +8,7 @@ Built with **React 18 + Vite**, **Google Gemini Free API**, **TMDB**, **RAWG**, 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Powered by Gemini](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Flash-purple)](https://aistudio.google.com/)
 [![Database: Google Sheets](https://img.shields.io/badge/Database-Google%20Sheets-emerald)](https://sheets.google.com)
+[![Support on Ko-fi](https://img.shields.io/badge/%F0%9F%A7%AA-Support%20on%20Ko--fi-FF5E5B)](https://ko-fi.com/caitlynr42)
 
 ---
 
